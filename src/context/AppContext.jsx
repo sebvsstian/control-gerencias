@@ -7,7 +7,7 @@ export function AppProvider({ children }) {
   const [gerenciaActiva, setGerenciaActiva] = useState(null); // null = dashboard general
   const [gerencias, setGerencias] = useState(GERENCIAS);
 
-  // Inicializacion del tema desde localStorage o preferencia de sistema (default 'dark')
+  // Inicializacion del tema desde localStorage
   const [theme, setTheme] = useState(() => {
     try {
       const savedTheme = localStorage.getItem('app_theme');
@@ -19,6 +19,8 @@ export function AppProvider({ children }) {
       return 'dark';
     }
   });
+
+  const isDarkMode = theme === 'dark';
 
   useEffect(() => {
     const root = document.documentElement;
@@ -52,6 +54,7 @@ export function AppProvider({ children }) {
         gerencias,
         actualizarResponsable,
         theme,
+        isDarkMode,
         toggleTheme,
       }}
     >

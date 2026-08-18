@@ -3,7 +3,7 @@ import { X, Calendar, User, FileText, AlignLeft, Building2 } from 'lucide-react'
 import { useApp } from '../context/AppContext';
 
 export default function ModalTarea({ tarea, gerenciaIdDefault, onGuardar, onCerrar }) {
-  const { gerencias } = useApp();
+  const { gerencias, isDarkMode } = useApp();
   const [form, setForm] = useState({
     gerenciaId: gerenciaIdDefault || '',
     titulo: '',
@@ -30,20 +30,30 @@ export default function ModalTarea({ tarea, gerenciaIdDefault, onGuardar, onCerr
     onGuardar(form);
   };
 
-  const inputClass = 'w-full bg-slate-50 dark:bg-gray-800 border border-slate-300 dark:border-gray-700 rounded-xl px-3.5 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-gray-800 transition-colors min-h-[44px]';
-  const labelClass = 'block text-xs font-bold text-slate-600 dark:text-gray-400 mb-1.5 uppercase tracking-wider';
+  const inputClass = `w-full border rounded-xl px-3.5 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors min-h-[44px] ${
+    isDarkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:bg-white'
+  }`;
+  const labelClass = `block text-xs font-bold mb-1.5 uppercase tracking-wider ${
+    isDarkMode ? 'text-slate-300' : 'text-slate-700'
+  }`;
 
   return (
-    <div className="fixed inset-0 bg-black/60 dark:bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 rounded-2xl w-full max-w-lg shadow-2xl my-auto animate-in zoom-in-95 duration-150 transition-colors">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      <div className={`border rounded-2xl w-full max-w-lg shadow-2xl my-auto animate-in zoom-in-95 duration-150 transition-colors ${
+        isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'
+      }`}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-200 dark:border-gray-800">
-          <h2 className="font-bold text-slate-900 dark:text-white text-base sm:text-lg">
+        <div className={`flex items-center justify-between p-4 sm:p-5 border-b ${
+          isDarkMode ? 'border-slate-700' : 'border-slate-200'
+        }`}>
+          <h2 className="font-bold text-base sm:text-lg">
             {tarea ? 'Editar Tarea' : 'Nueva Tarea Gerencial'}
           </h2>
           <button
             onClick={onCerrar}
-            className="text-slate-400 hover:text-slate-700 dark:text-gray-400 dark:hover:text-white transition-colors p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-gray-800 min-h-[40px] min-w-[40px] flex items-center justify-center"
+            className={`transition-colors p-2 rounded-xl min-h-[40px] min-w-[40px] flex items-center justify-center ${
+              isDarkMode ? 'text-slate-400 hover:text-white hover:bg-slate-700' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+            }`}
             aria-label="Cerrar modal"
           >
             <X size={20} />
@@ -55,7 +65,7 @@ export default function ModalTarea({ tarea, gerenciaIdDefault, onGuardar, onCerr
           {/* Gerencia */}
           <div>
             <label className={labelClass}>
-              <Building2 size={13} className="inline mr-1.5 text-indigo-600 dark:text-indigo-400" />Gerencia
+              <Building2 size={13} className="inline mr-1.5 text-indigo-500" />Gerencia
             </label>
             <select
               className={inputClass}
@@ -65,7 +75,9 @@ export default function ModalTarea({ tarea, gerenciaIdDefault, onGuardar, onCerr
             >
               <option value="">Seleccionar gerencia...</option>
               {gerencias.map((g) => (
-                <option key={g.id} value={g.id}>{g.nombre}</option>
+                <option key={g.id} value={g.id} className={isDarkMode ? 'bg-slate-800 text-white' : 'bg-white text-slate-900'}>
+                  {g.nombre}
+                </option>
               ))}
             </select>
           </div>
@@ -73,7 +85,7 @@ export default function ModalTarea({ tarea, gerenciaIdDefault, onGuardar, onCerr
           {/* Titulo */}
           <div>
             <label className={labelClass}>
-              <FileText size={13} className="inline mr-1.5 text-indigo-600 dark:text-indigo-400" />Título de la Tarea
+              <FileText size={13} className="inline mr-1.5 text-indigo-500" />Título de la Tarea
             </label>
             <input
               type="text"
@@ -88,7 +100,7 @@ export default function ModalTarea({ tarea, gerenciaIdDefault, onGuardar, onCerr
           {/* Descripcion */}
           <div>
             <label className={labelClass}>
-              <AlignLeft size={13} className="inline mr-1.5 text-indigo-600 dark:text-indigo-400" />Descripción / Entregable
+              <AlignLeft size={13} className="inline mr-1.5 text-indigo-500" />Descripción / Entregable
             </label>
             <textarea
               className={`${inputClass} resize-none h-24`}
@@ -101,7 +113,7 @@ export default function ModalTarea({ tarea, gerenciaIdDefault, onGuardar, onCerr
           {/* Responsable */}
           <div>
             <label className={labelClass}>
-              <User size={13} className="inline mr-1.5 text-indigo-600 dark:text-indigo-400" />Persona Responsable
+              <User size={13} className="inline mr-1.5 text-indigo-500" />Persona Responsable
             </label>
             <input
               type="text"
@@ -115,7 +127,7 @@ export default function ModalTarea({ tarea, gerenciaIdDefault, onGuardar, onCerr
           {/* Fecha Limite */}
           <div>
             <label className={labelClass}>
-              <Calendar size={13} className="inline mr-1.5 text-indigo-600 dark:text-indigo-400" />Fecha Límite (Deadline)
+              <Calendar size={13} className="inline mr-1.5 text-indigo-500" />Fecha Límite (Deadline)
             </label>
             <input
               type="date"
@@ -130,7 +142,9 @@ export default function ModalTarea({ tarea, gerenciaIdDefault, onGuardar, onCerr
             <button
               type="button"
               onClick={onCerrar}
-              className="w-full sm:flex-1 py-3 rounded-xl border border-slate-300 dark:border-gray-700 text-slate-700 dark:text-gray-300 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors min-h-[44px]"
+              className={`w-full sm:flex-1 py-3 rounded-xl border text-sm font-semibold transition-colors min-h-[44px] ${
+                isDarkMode ? 'border-slate-600 text-slate-300 hover:bg-slate-700' : 'border-slate-300 text-slate-700 hover:bg-slate-100'
+              }`}
             >
               Cancelar
             </button>

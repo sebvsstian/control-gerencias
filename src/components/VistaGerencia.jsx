@@ -23,7 +23,7 @@ const FILTROS = [
 ];
 
 export default function VistaGerencia({ gerencia, tareas, onAgregar, onToggle, onEditar, onEliminar }) {
-  const { actualizarResponsable } = useApp();
+  const { actualizarResponsable, isDarkMode } = useApp();
   const [filtro, setFiltro] = useState('todas');
   const [modalAbierto, setModalAbierto] = useState(false);
   const [tareaEditando, setTareaEditando] = useState(null);
@@ -72,14 +72,22 @@ export default function VistaGerencia({ gerencia, tareas, onAgregar, onToggle, o
   return (
     <div className="flex-1 px-4 sm:px-6 lg:px-8 py-5 sm:py-7 max-w-5xl w-full mx-auto">
       {/* Header Banner */}
-      <div className={`bg-white dark:bg-gray-900 border rounded-2xl p-4 sm:p-6 mb-6 ${colors.border} shadow-sm transition-colors`}>
+      <div className={`border rounded-2xl p-4 sm:p-6 mb-6 shadow-xs transition-colors ${
+        isDarkMode
+          ? `bg-slate-800/90 border-slate-700/80 text-white ${colors.border}`
+          : `bg-white border-slate-200 text-slate-900 ${colors.border}`
+      }`}>
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div className="flex items-start gap-3.5">
-            <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-md ${colors.iconBg}`}>
+            <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-xs ${colors.iconBg}`}>
               <Icon size={26} className={colors.text} />
             </div>
             <div className="min-w-0">
-              <h1 className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-white leading-snug">{gerencia.nombre}</h1>
+              <h1 className={`text-lg sm:text-2xl font-bold leading-snug ${
+                isDarkMode ? 'text-white' : 'text-slate-900'
+              }`}>
+                {gerencia.nombre}
+              </h1>
               
               {/* Responsable */}
               <div className="mt-1">
@@ -89,7 +97,9 @@ export default function VistaGerencia({ gerencia, tareas, onAgregar, onToggle, o
                       type="text"
                       value={nombreResponsable}
                       onChange={(e) => setNombreResponsable(e.target.value)}
-                      className="bg-slate-50 dark:bg-gray-800 border border-slate-300 dark:border-gray-700 rounded-lg px-2.5 py-1.5 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 min-h-[36px]"
+                      className={`border rounded-lg px-2.5 py-1.5 text-xs sm:text-sm focus:outline-none focus:border-indigo-500 min-h-[36px] ${
+                        isDarkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                      }`}
                       placeholder="Nombre del alumno responsable..."
                       onKeyDown={(e) => e.key === 'Enter' && handleGuardarResponsable()}
                       autoFocus
@@ -102,23 +112,29 @@ export default function VistaGerencia({ gerencia, tareas, onAgregar, onToggle, o
                     </button>
                     <button
                       onClick={() => setEditandoResponsable(false)}
-                      className="px-2.5 py-1.5 rounded-lg bg-slate-200 dark:bg-gray-800 text-slate-600 dark:text-gray-400 text-xs hover:text-slate-900 dark:hover:text-white min-h-[36px]"
+                      className={`px-2.5 py-1.5 rounded-lg text-xs min-h-[36px] ${
+                        isDarkMode ? 'bg-slate-700 text-slate-300 hover:text-white' : 'bg-slate-200 text-slate-700 hover:text-slate-900'
+                      }`}
                     >
                       Cancelar
                     </button>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs sm:text-sm text-slate-600 dark:text-gray-300 font-medium">
+                    <span className={`text-xs sm:text-sm font-medium ${
+                      isDarkMode ? 'text-slate-300' : 'text-slate-600'
+                    }`}>
                       {gerencia.responsable ? (
-                        <strong className="text-slate-900 dark:text-white font-semibold">{gerencia.responsable}</strong>
+                        <strong className={isDarkMode ? 'text-white' : 'text-slate-900'}>{gerencia.responsable}</strong>
                       ) : (
-                        <span className="text-slate-400 dark:text-gray-500 italic">Responsable no asignado</span>
+                        <span className={`italic ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Responsable no asignado</span>
                       )}
                     </span>
                     <button
                       onClick={() => setEditandoResponsable(true)}
-                      className="p-1 rounded-lg text-slate-400 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
+                      className={`p-1 rounded-lg transition-colors ${
+                        isDarkMode ? 'text-slate-400 hover:text-indigo-400 hover:bg-slate-700' : 'text-slate-400 hover:text-indigo-600 hover:bg-slate-100'
+                      }`}
                       title="Editar responsable"
                     >
                       <Pencil size={13} />
@@ -126,24 +142,36 @@ export default function VistaGerencia({ gerencia, tareas, onAgregar, onToggle, o
                   </div>
                 )}
               </div>
-              <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">{gerencia.descripcion}</p>
+              <p className={`text-xs mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{gerencia.descripcion}</p>
             </div>
           </div>
 
           {/* Progress metric */}
-          <div className="flex items-center sm:flex-col sm:items-end justify-between border-t border-slate-100 dark:border-gray-800 sm:border-0 pt-3 sm:pt-0">
-            <span className="text-xs text-slate-500 dark:text-gray-400 sm:hidden">Avance de área:</span>
+          <div className={`flex items-center sm:flex-col sm:items-end justify-between border-t sm:border-0 pt-3 sm:pt-0 ${
+            isDarkMode ? 'border-slate-700' : 'border-slate-100'
+          }`}>
+            <span className={`text-xs sm:hidden ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Avance de área:</span>
             <div className="text-right">
-              <span className={`text-3xl sm:text-4xl font-black ${pct >= 75 ? 'text-emerald-600 dark:text-emerald-400' : pct >= 40 ? 'text-amber-600 dark:text-yellow-400' : 'text-rose-600 dark:text-red-400'}`}>
+              <span className={`text-3xl sm:text-4xl font-black ${
+                pct >= 75
+                  ? (isDarkMode ? 'text-emerald-400' : 'text-emerald-600')
+                  : pct >= 40
+                  ? (isDarkMode ? 'text-yellow-400' : 'text-amber-600')
+                  : (isDarkMode ? 'text-red-400' : 'text-rose-600')
+              }`}>
                 {pct}%
               </span>
-              <p className="text-[11px] sm:text-xs text-slate-500 dark:text-gray-400 font-medium">{completadas} de {tareasGerencia.length} completadas</p>
+              <p className={`text-[11px] sm:text-xs font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                {completadas} de {tareasGerencia.length} completadas
+              </p>
             </div>
           </div>
         </div>
 
         {/* Progress bar */}
-        <div className="mt-4 h-2.5 sm:h-3 bg-slate-100 dark:bg-gray-800 rounded-full overflow-hidden">
+        <div className={`mt-4 h-2.5 sm:h-3 rounded-full overflow-hidden ${
+          isDarkMode ? 'bg-slate-700' : 'bg-slate-100'
+        }`}>
           <div
             className={`h-full rounded-full transition-all duration-700 ${colorBar}`}
             style={{ width: `${pct}%` }}
@@ -152,9 +180,11 @@ export default function VistaGerencia({ gerencia, tareas, onAgregar, onToggle, o
 
         {/* Alert for overdue tasks */}
         {atrasadas > 0 && (
-          <div className="mt-3 flex items-center gap-2 bg-rose-50 dark:bg-red-950/50 border border-rose-200 dark:border-red-900/60 rounded-xl px-3 py-2">
-            <AlertTriangle size={15} className="text-rose-600 dark:text-red-400 shrink-0" />
-            <span className="text-xs sm:text-sm text-rose-700 dark:text-red-300 font-medium">
+          <div className={`mt-3 flex items-center gap-2 border rounded-xl px-3 py-2 ${
+            isDarkMode ? 'bg-red-950/50 border-red-900/60 text-red-300' : 'bg-rose-50 border-rose-200 text-rose-700'
+          }`}>
+            <AlertTriangle size={15} className={isDarkMode ? 'text-red-400' : 'text-rose-600'} />
+            <span className="text-xs sm:text-sm font-medium">
               {atrasadas} tarea{atrasadas > 1 ? 's' : ''} vencida{atrasadas > 1 ? 's' : ''} pendiente{atrasadas > 1 ? 's' : ''}
             </span>
           </div>
@@ -164,16 +194,18 @@ export default function VistaGerencia({ gerencia, tareas, onAgregar, onToggle, o
       {/* Responsive Toolbar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
         {/* Filter Pills */}
-        <div className="flex items-center gap-1 bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 rounded-xl p-1 overflow-x-auto scrollbar-none shadow-xs">
-          <Filter size={14} className="text-slate-400 dark:text-gray-400 ml-2 mr-1 shrink-0" />
+        <div className={`flex items-center gap-1 border rounded-xl p-1 overflow-x-auto scrollbar-none shadow-xs ${
+          isDarkMode ? 'bg-slate-800/90 border-slate-700' : 'bg-white border-slate-200'
+        }`}>
+          <Filter size={14} className="ml-2 mr-1 shrink-0 text-slate-400" />
           {FILTROS.map((f) => (
             <button
               key={f.id}
               onClick={() => setFiltro(f.id)}
               className={`px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all min-h-[38px] flex items-center justify-center ${
                 filtro === f.id
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-gray-800'
+                  ? 'bg-indigo-600 text-white shadow-xs'
+                  : (isDarkMode ? 'text-slate-300 hover:text-white hover:bg-slate-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100')
               }`}
             >
               <span>{f.label}</span>
@@ -198,14 +230,20 @@ export default function VistaGerencia({ gerencia, tareas, onAgregar, onToggle, o
 
       {/* Task List */}
       {tareasFiltradas.length === 0 ? (
-        <div className="text-center py-14 sm:py-16 bg-white dark:bg-gray-900/50 border border-slate-200 dark:border-gray-800/80 rounded-2xl p-6 shadow-xs">
+        <div className={`text-center py-14 sm:py-16 border rounded-2xl p-6 shadow-xs ${
+          isDarkMode ? 'bg-slate-800/50 border-slate-700/80 text-white' : 'bg-white border-slate-200 text-slate-800'
+        }`}>
           {tareasGerencia.length === 0 ? (
             <div>
-              <div className="w-16 h-16 bg-slate-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-400 dark:text-gray-500">
+              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
+                isDarkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-400'
+              }`}>
                 <ClipboardList size={32} />
               </div>
-              <h3 className="text-slate-900 dark:text-white font-bold text-base sm:text-lg mb-1">Sin tareas en esta gerencia</h3>
-              <p className="text-slate-500 dark:text-gray-400 text-xs sm:text-sm mb-5 max-w-md mx-auto">
+              <h3 className={`font-bold text-base sm:text-lg mb-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                Sin tareas en esta gerencia
+              </h3>
+              <p className={`text-xs sm:text-sm mb-5 max-w-md mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                 Agrega las metas y entregables para que el avance de esta área se calcule en tiempo real.
               </p>
               <button
@@ -218,11 +256,17 @@ export default function VistaGerencia({ gerencia, tareas, onAgregar, onToggle, o
             </div>
           ) : (
             <div>
-              <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-900/60 rounded-2xl flex items-center justify-center mx-auto mb-4 text-emerald-600 dark:text-emerald-400">
+              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 border ${
+                isDarkMode ? 'bg-emerald-950/60 border-emerald-900/60 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-600'
+              }`}>
                 <CheckCircle2 size={32} />
               </div>
-              <h3 className="text-slate-900 dark:text-white font-bold text-base mb-1">No hay tareas con el filtro "{filtro}"</h3>
-              <p className="text-slate-500 dark:text-gray-400 text-xs">Selecciona otro filtro para ver las demás tareas.</p>
+              <h3 className={`font-bold text-base mb-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                No hay tareas con el filtro "{filtro}"
+              </h3>
+              <p className={`text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                Selecciona otro filtro para ver las demás tareas.
+              </p>
             </div>
           )}
         </div>
