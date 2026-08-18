@@ -22,7 +22,6 @@ export function useComentarios(tareaId) {
       return;
     }
 
-    // Escuchador en tiempo real mediante onSnapshot filtrado por tareaId
     const q = query(
       collection(db, 'comentarios'),
       where('tareaId', '==', tareaId),
@@ -31,6 +30,7 @@ export function useComentarios(tareaId) {
 
     const unsub = onSnapshot(
       q,
+      { includeMetadataChanges: true },
       (snap) => {
         const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         setComentarios(data);
@@ -38,7 +38,7 @@ export function useComentarios(tareaId) {
         setError(null);
       },
       (err) => {
-        console.error('Error al escuchar comentarios en tiempo real:', err);
+        console.error('Error al cargar comentarios:', err);
         setError(err.message);
         setLoading(false);
       }
@@ -53,7 +53,7 @@ export function useComentarios(tareaId) {
       await addDoc(collection(db, 'comentarios'), {
         tareaId,
         texto: texto.trim(),
-        autor: autor?.trim() || 'Anónimo',
+        autor: autor?.trim() || 'Compañero',
         creadoEn: serverTimestamp(),
       });
     } catch (err) {

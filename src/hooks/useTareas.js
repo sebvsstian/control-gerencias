@@ -12,25 +12,34 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
+// Cache en memoria a nivel de modulo para render instantaneo a 0ms entre renderizados
+let memoryTareasCache = [];
+let hasLoadedOnce = false;
+
 export function useTareas() {
-  const [tareas, setTareas] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [tareas, setTareas] = useState(memoryTareasCache);
+  const [loading, setLoading] = useState(!hasLoadedOnce);
   const [error, setError] = useState(null);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
-    // Escuchador en tiempo real mediante onSnapshot
+    // Escuchador onSnapshot con cache local persistente
     const q = query(collection(db, 'tareas'), orderBy('creadoEn', 'asc'));
     
     const unsub = onSnapshot(
       q,
+      { includeMetadataChanges: true },
       (snap) => {
         const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        memoryTareasCache = data;
+        hasLoadedOnce = true;
         setTareas(data);
         setLoading(false);
+        setIsSyncing(snap.metadata.hasPendingWrites);
         setError(null);
       },
       (err) => {
-        console.error('Error al escuchar tareas en tiempo real:', err);
+        console.error('Error al sincronizar tareas:', err);
         setError(err.message);
         setLoading(false);
       }
@@ -39,7 +48,7 @@ export function useTareas() {
     return () => unsub();
   }, []);
 
-  // Agregar tarea con actualizacion optimista
+  // Agregar tarea con respuesta optimista
   const agregarTarea = async (tarea) => {
     try {
       await addDoc(collection(db, 'tareas'), {
@@ -53,12 +62,15 @@ export function useTareas() {
     }
   };
 
-  // Toggle con actualizacion optimista inmediata en memoria
+  // Toggle con actualizacion optimista instantanea en memoria local
   const toggleTarea = async (id, completadaActual) => {
     const nuevoEstado = !completadaActual;
-    // Actualizacion optimista local para respuesta visual a 0ms
+    // Respuesta visual instantanea a 0ms
     setTareas((prev) =>
       prev.map((t) => (t.id === id ? { ...t, completada: nuevoEstado } : t))
+    );
+    memoryTareasCache = memoryTareasCache.map((t) =>
+      t.id === id ? { ...t, completada: nuevoEstado } : t
     );
 
     try {
@@ -68,7 +80,7 @@ export function useTareas() {
       });
     } catch (err) {
       console.error('Error al actualizar estado de tarea:', err);
-      // Revertir si falla
+      // Revertir en caso de fallo
       setTareas((prev) =>
         prev.map((t) => (t.id === id ? { ...t, completada: completadaActual } : t))
       );
@@ -76,7 +88,7 @@ export function useTareas() {
     }
   };
 
-  // Editar tarea
+  // Editar tarea optimista
   const editarTarea = async (id, datos) => {
     setTareas((prev) =>
       prev.map((t) => (t.id === id ? { ...t, ...datos } : t))
@@ -93,9 +105,10 @@ export function useTareas() {
     }
   };
 
-  // Eliminar tarea
+  // Eliminar tarea optimista
   const eliminarTarea = async (id) => {
     setTareas((prev) => prev.filter((t) => t.id !== id));
+    memoryTareasCache = memoryTareasCache.filter((t) => t.id !== id);
 
     try {
       await deleteDoc(doc(db, 'tareas', id));
@@ -105,5 +118,5 @@ export function useTareas() {
     }
   };
 
-  return { tareas, loading, error, agregarTarea, toggleTarea, editarTarea, eliminarTarea };
+  return { tareas, loading, error, isSyncing, agregarTarea, toggleTarea, editarTarea, eliminarTarea };
 }

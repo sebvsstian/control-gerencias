@@ -1,5 +1,10 @@
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+﻿import { initializeApp } from "firebase/app";
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  getFirestore
+} from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -12,4 +17,18 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+
+let firestoreDb;
+try {
+  // Habilita persistencia IndexedDB ultra-rapida con soporte multi-pestana
+  firestoreDb = initializeFirestore(app, {
+    localCache: persistentLocalCache({
+      tabManager: persistentMultipleTabManager()
+    })
+  });
+} catch (e) {
+  console.warn("Fallback de inicializacion Firestore:", e);
+  firestoreDb = getFirestore(app);
+}
+
+export const db = firestoreDb;

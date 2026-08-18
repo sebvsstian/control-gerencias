@@ -1,11 +1,42 @@
-import React, { createContext, useContext, useState } from 'react';
+﻿import React, { createContext, useContext, useState, useEffect } from 'react';
 import { GERENCIAS } from '../constants';
 
 const AppContext = createContext(null);
 
 export function AppProvider({ children }) {
-  const [gerenciaActiva, setGerenciaActiva] = useState(null); // null = dashboard
+  const [gerenciaActiva, setGerenciaActiva] = useState(null); // null = dashboard general
   const [gerencias, setGerencias] = useState(GERENCIAS);
+
+  // Inicializacion del tema desde localStorage o preferencia de sistema (default 'dark')
+  const [theme, setTheme] = useState(() => {
+    try {
+      const savedTheme = localStorage.getItem('app_theme');
+      if (savedTheme === 'light' || savedTheme === 'dark') {
+        return savedTheme;
+      }
+      return 'dark'; // Tema por defecto
+    } catch {
+      return 'dark';
+    }
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    try {
+      localStorage.setItem('app_theme', theme);
+    } catch (e) {
+      console.warn('No se pudo guardar tema en localStorage:', e);
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
 
   const actualizarResponsable = (gerenciaId, nombre) => {
     setGerencias((prev) =>
@@ -14,7 +45,16 @@ export function AppProvider({ children }) {
   };
 
   return (
-    <AppContext.Provider value={{ gerenciaActiva, setGerenciaActiva, gerencias, actualizarResponsable }}>
+    <AppContext.Provider
+      value={{
+        gerenciaActiva,
+        setGerenciaActiva,
+        gerencias,
+        actualizarResponsable,
+        theme,
+        toggleTheme,
+      }}
+    >
       {children}
     </AppContext.Provider>
   );

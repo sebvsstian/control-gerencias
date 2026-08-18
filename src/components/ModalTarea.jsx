@@ -30,20 +30,20 @@ export default function ModalTarea({ tarea, gerenciaIdDefault, onGuardar, onCerr
     onGuardar(form);
   };
 
-  const inputClass = 'w-full bg-gray-800 border border-gray-700 rounded-xl px-3.5 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors min-h-[44px]';
-  const labelClass = 'block text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider';
+  const inputClass = 'w-full bg-slate-50 dark:bg-gray-800 border border-slate-300 dark:border-gray-700 rounded-xl px-3.5 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-gray-800 transition-colors min-h-[44px]';
+  const labelClass = 'block text-xs font-bold text-slate-600 dark:text-gray-400 mb-1.5 uppercase tracking-wider';
 
   return (
-    <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-lg shadow-2xl my-auto animate-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 bg-black/60 dark:bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      <div className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 rounded-2xl w-full max-w-lg shadow-2xl my-auto animate-in zoom-in-95 duration-150 transition-colors">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-gray-800">
-          <h2 className="font-bold text-white text-base sm:text-lg">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-200 dark:border-gray-800">
+          <h2 className="font-bold text-slate-900 dark:text-white text-base sm:text-lg">
             {tarea ? 'Editar Tarea' : 'Nueva Tarea Gerencial'}
           </h2>
           <button
             onClick={onCerrar}
-            className="text-gray-400 hover:text-white transition-colors p-2 rounded-xl hover:bg-gray-800 min-h-[40px] min-w-[40px] flex items-center justify-center"
+            className="text-slate-400 hover:text-slate-700 dark:text-gray-400 dark:hover:text-white transition-colors p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-gray-800 min-h-[40px] min-w-[40px] flex items-center justify-center"
             aria-label="Cerrar modal"
           >
             <X size={20} />
@@ -55,7 +55,7 @@ export default function ModalTarea({ tarea, gerenciaIdDefault, onGuardar, onCerr
           {/* Gerencia */}
           <div>
             <label className={labelClass}>
-              <Building2 size={13} className="inline mr-1.5 text-indigo-400" />Gerencia
+              <Building2 size={13} className="inline mr-1.5 text-indigo-600 dark:text-indigo-400" />Gerencia
             </label>
             <select
               className={inputClass}
@@ -73,12 +73,12 @@ export default function ModalTarea({ tarea, gerenciaIdDefault, onGuardar, onCerr
           {/* Titulo */}
           <div>
             <label className={labelClass}>
-              <FileText size={13} className="inline mr-1.5 text-indigo-400" />Título de la Tarea
+              <FileText size={13} className="inline mr-1.5 text-indigo-600 dark:text-indigo-400" />Título de la Tarea
             </label>
             <input
               type="text"
               className={inputClass}
-              placeholder="Ej: Elaborar presupuesto Q1 para inversionistas..."
+              placeholder="Ej: Elaborar proyección financiera Q1 para inversionistas..."
               value={form.titulo}
               onChange={(e) => setForm({ ...form, titulo: e.target.value })}
               required
@@ -88,11 +88,11 @@ export default function ModalTarea({ tarea, gerenciaIdDefault, onGuardar, onCerr
           {/* Descripcion */}
           <div>
             <label className={labelClass}>
-              <AlignLeft size={13} className="inline mr-1.5 text-indigo-400" />Descripción / Entregable
+              <AlignLeft size={13} className="inline mr-1.5 text-indigo-600 dark:text-indigo-400" />Descripción / Entregable
             </label>
             <textarea
               className={`${inputClass} resize-none h-24`}
-              placeholder="Detalle o entregable esperado..."
+              placeholder="Detalle del alcance o entregable esperado..."
               value={form.descripcion}
               onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
             />
@@ -101,7 +101,7 @@ export default function ModalTarea({ tarea, gerenciaIdDefault, onGuardar, onCerr
           {/* Responsable */}
           <div>
             <label className={labelClass}>
-              <User size={13} className="inline mr-1.5 text-indigo-400" />Persona Responsable
+              <User size={13} className="inline mr-1.5 text-indigo-600 dark:text-indigo-400" />Persona Responsable
             </label>
             <input
               type="text"
@@ -115,7 +115,7 @@ export default function ModalTarea({ tarea, gerenciaIdDefault, onGuardar, onCerr
           {/* Fecha Limite */}
           <div>
             <label className={labelClass}>
-              <Calendar size={13} className="inline mr-1.5 text-indigo-400" />Fecha Límite (Deadline)
+              <Calendar size={13} className="inline mr-1.5 text-indigo-600 dark:text-indigo-400" />Fecha Límite (Deadline)
             </label>
             <input
               type="date"
@@ -130,13 +130,13 @@ export default function ModalTarea({ tarea, gerenciaIdDefault, onGuardar, onCerr
             <button
               type="button"
               onClick={onCerrar}
-              className="w-full sm:flex-1 py-3 rounded-xl border border-gray-700 text-gray-300 text-sm font-medium hover:text-white hover:border-gray-600 transition-colors min-h-[44px]"
+              className="w-full sm:flex-1 py-3 rounded-xl border border-slate-300 dark:border-gray-700 text-slate-700 dark:text-gray-300 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors min-h-[44px]"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="w-full sm:flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] text-white font-semibold text-sm transition-all shadow-lg shadow-indigo-900/40 min-h-[44px]"
+              className="w-full sm:flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] text-white font-semibold text-sm transition-all shadow-md shadow-indigo-600/30 min-h-[44px]"
             >
               {tarea ? 'Guardar Cambios' : 'Crear Tarea'}
             </button>
