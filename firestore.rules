@@ -1,0 +1,16 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Tareas: cualquier usuario autenticado puede leer/escribir
+    // Para produccion, restringir por autenticacion
+    match /tareas/{tareaId} {
+      allow read, write: if true; // Cambiar a: if request.auth != null;
+    }
+
+    // Comentarios: cualquier usuario puede leer/escribir
+    match /comentarios/{comentarioId} {
+      allow read, write: if true; // Cambiar a: if request.auth != null;
+    }
+  }
+}

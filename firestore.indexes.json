@@ -1,0 +1,20 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "tareas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "creadoEn", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "comentarios",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "tareaId", "order": "ASCENDING" },
+        { "fieldPath": "creadoEn", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
