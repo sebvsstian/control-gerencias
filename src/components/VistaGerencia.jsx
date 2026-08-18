@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   Building2, DollarSign, Users, TrendingUp, MessageSquare,
   MessageCircle, Megaphone, Settings, Cog, Plus, Filter,
-  AlertTriangle, CheckCircle2, ClipboardList, Pencil
+  AlertTriangle, CheckCircle2, ClipboardList, Pencil, Check
 } from 'lucide-react';
 import TareaCard from './TareaCard';
 import ModalTarea from './ModalTarea';
@@ -44,7 +44,7 @@ export default function VistaGerencia({ gerencia, tareas, onAgregar, onToggle, o
   });
 
   const atrasadas = tareasGerencia.filter(
-    (t) => estadoDeadline(t.fechaLimite, t.completada) === 'vencida'
+    (t) => !t.completada && estadoDeadline(t.fechaLimite, t.completada) === 'vencida'
   ).length;
 
   const handleGuardar = async (datos) => {
@@ -70,125 +70,159 @@ export default function VistaGerencia({ gerencia, tareas, onAgregar, onToggle, o
   const completadas = tareasGerencia.filter((t) => t.completada).length;
 
   return (
-    <div className="flex-1 overflow-y-auto scrollbar-thin p-6">
-      {/* Header */}
-      <div className={`bg-gray-900 border rounded-2xl p-6 mb-6 ${colors.border} border-opacity-40`}>
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${colors.bg}`}>
-              <Icon size={28} className={colors.text} />
+    <div className="flex-1 px-4 sm:px-6 lg:px-8 py-5 sm:py-7 max-w-5xl w-full mx-auto">
+      {/* Header Banner */}
+      <div className={`bg-gray-900 border rounded-2xl p-4 sm:p-6 mb-6 ${colors.border} border-opacity-40 shadow-sm`}>
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div className="flex items-start gap-3.5">
+            <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-md ${colors.bg}`}>
+              <Icon size={26} className={colors.text} />
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-white">{gerencia.nombre}</h1>
-              {editandoResponsable ? (
-                <div className="flex items-center gap-2 mt-1">
-                  <input
-                    type="text"
-                    value={nombreResponsable}
-                    onChange={(e) => setNombreResponsable(e.target.value)}
-                    className="bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-sm text-white focus:outline-none focus:border-indigo-500"
-                    placeholder="Nombre del responsable..."
-                    onKeyDown={(e) => e.key === 'Enter' && handleGuardarResponsable()}
-                    autoFocus
-                  />
-                  <button onClick={handleGuardarResponsable} className="text-xs text-indigo-400 hover:text-indigo-300">Guardar</button>
-                  <button onClick={() => setEditandoResponsable(false)} className="text-xs text-gray-500 hover:text-gray-400">Cancelar</button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-gray-400 text-sm">
-                    {gerencia.responsable || <span className="text-gray-600 italic">Sin responsable</span>}
-                  </span>
-                  <button onClick={() => setEditandoResponsable(true)} className="text-gray-600 hover:text-indigo-400 transition-colors">
-                    <Pencil size={12} />
-                  </button>
-                </div>
-              )}
-              <p className="text-xs text-gray-500 mt-0.5">{gerencia.descripcion}</p>
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-2xl font-bold text-white leading-snug">{gerencia.nombre}</h1>
+              
+              {/* Responsable */}
+              <div className="mt-1">
+                {editandoResponsable ? (
+                  <div className="flex flex-wrap items-center gap-2 mt-1">
+                    <input
+                      type="text"
+                      value={nombreResponsable}
+                      onChange={(e) => setNombreResponsable(e.target.value)}
+                      className="bg-gray-800 border border-gray-700 rounded-lg px-2.5 py-1.5 text-xs sm:text-sm text-white focus:outline-none focus:border-indigo-500 min-h-[36px]"
+                      placeholder="Nombre del alumno responsable..."
+                      onKeyDown={(e) => e.key === 'Enter' && handleGuardarResponsable()}
+                      autoFocus
+                    />
+                    <button
+                      onClick={handleGuardarResponsable}
+                      className="px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1 min-h-[36px]"
+                    >
+                      <Check size={14} /> Guardar
+                    </button>
+                    <button
+                      onClick={() => setEditandoResponsable(false)}
+                      className="px-2.5 py-1.5 rounded-lg bg-gray-800 text-gray-400 text-xs hover:text-white min-h-[36px]"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs sm:text-sm text-gray-300">
+                      {gerencia.responsable ? (
+                        <strong className="text-white font-medium">{gerencia.responsable}</strong>
+                      ) : (
+                        <span className="text-gray-500 italic">Responsable no asignado</span>
+                      )}
+                    </span>
+                    <button
+                      onClick={() => setEditandoResponsable(true)}
+                      className="p-1 rounded-lg text-gray-400 hover:text-indigo-400 hover:bg-gray-800 transition-colors"
+                      title="Editar responsable"
+                    >
+                      <Pencil size={13} />
+                    </button>
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-gray-400 mt-1">{gerencia.descripcion}</p>
             </div>
           </div>
 
-          {/* Progress */}
-          <div className="text-right shrink-0">
-            <span className={`text-4xl font-black ${pct >= 75 ? 'text-emerald-400' : pct >= 40 ? 'text-yellow-400' : 'text-red-400'}`}>
-              {pct}%
-            </span>
-            <p className="text-xs text-gray-500 mt-1">{completadas}/{tareasGerencia.length} tareas</p>
+          {/* Progress metric */}
+          <div className="flex items-center sm:flex-col sm:items-end justify-between border-t border-gray-800 sm:border-0 pt-3 sm:pt-0">
+            <span className="text-xs text-gray-400 sm:hidden">Avance de área:</span>
+            <div className="text-right">
+              <span className={`text-3xl sm:text-4xl font-black ${pct >= 75 ? 'text-emerald-400' : pct >= 40 ? 'text-yellow-400' : 'text-red-400'}`}>
+                {pct}%
+              </span>
+              <p className="text-[11px] sm:text-xs text-gray-400">{completadas} de {tareasGerencia.length} completadas</p>
+            </div>
           </div>
         </div>
 
         {/* Progress bar */}
-        <div className="mt-4 h-3 bg-gray-800 rounded-full overflow-hidden">
+        <div className="mt-4 h-2.5 sm:h-3 bg-gray-800 rounded-full overflow-hidden">
           <div
-            className={`h-3 rounded-full transition-all duration-700 ${colorBar}`}
+            className={`h-full rounded-full transition-all duration-700 ${colorBar}`}
             style={{ width: `${pct}%` }}
           />
         </div>
 
-        {/* Alert */}
+        {/* Alert for overdue tasks */}
         {atrasadas > 0 && (
-          <div className="mt-3 flex items-center gap-2 bg-red-950/40 border border-red-900/40 rounded-lg px-3 py-2">
-            <AlertTriangle size={14} className="text-red-400 shrink-0" />
-            <span className="text-sm text-red-400">
-              {atrasadas} tarea{atrasadas > 1 ? 's' : ''} vencida{atrasadas > 1 ? 's' : ''} sin completar
+          <div className="mt-3 flex items-center gap-2 bg-red-950/50 border border-red-900/60 rounded-xl px-3 py-2">
+            <AlertTriangle size={15} className="text-red-400 shrink-0" />
+            <span className="text-xs sm:text-sm text-red-300 font-medium">
+              {atrasadas} tarea{atrasadas > 1 ? 's' : ''} vencida{atrasadas > 1 ? 's' : ''} pendiente{atrasadas > 1 ? 's' : ''}
             </span>
           </div>
         )}
       </div>
 
-      {/* Toolbar */}
-      <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
-        {/* Filtros */}
-        <div className="flex items-center gap-1 bg-gray-900 border border-gray-800 rounded-xl p-1">
-          <Filter size={13} className="text-gray-500 ml-2 mr-1" />
+      {/* Responsive Toolbar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
+        {/* Filter Pills (Horizontally scrollable on small mobile) */}
+        <div className="flex items-center gap-1 bg-gray-900 border border-gray-800 rounded-xl p-1 overflow-x-auto scrollbar-none">
+          <Filter size={14} className="text-gray-400 ml-2 mr-1 shrink-0" />
           {FILTROS.map((f) => (
             <button
               key={f.id}
               onClick={() => setFiltro(f.id)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              className={`px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all min-h-[38px] flex items-center justify-center ${
                 filtro === f.id
-                  ? 'bg-indigo-600 text-white'
+                  ? 'bg-indigo-600 text-white shadow-sm'
                   : 'text-gray-400 hover:text-white hover:bg-gray-800'
               }`}
             >
-              {f.label}
+              <span>{f.label}</span>
               {f.id === 'atrasadas' && atrasadas > 0 && (
-                <span className="ml-1 bg-red-600 text-white text-xs rounded-full px-1">{atrasadas}</span>
+                <span className="ml-1.5 bg-red-600 text-white text-[10px] rounded-full px-1.5 py-0.2">
+                  {atrasadas}
+                </span>
               )}
             </button>
           ))}
         </div>
 
-        {/* Boton nueva tarea */}
+        {/* Create Task Button */}
         <button
           onClick={() => { setTareaEditando(null); setModalAbierto(true); }}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-xl transition-colors shadow-lg shadow-indigo-900/30"
+          className="flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] text-white text-sm font-semibold rounded-xl transition-all shadow-lg shadow-indigo-900/30 min-h-[44px]"
         >
-          <Plus size={16} />
-          Nueva Tarea para {gerencia.nombre.split(' ')[0]}
+          <Plus size={18} />
+          <span>+ Nueva Tarea</span>
         </button>
       </div>
 
-      {/* Lista de tareas */}
+      {/* Task List */}
       {tareasFiltradas.length === 0 ? (
-        <div className="text-center py-16">
+        <div className="text-center py-14 sm:py-16 bg-gray-900/50 border border-gray-800/80 rounded-2xl p-6">
           {tareasGerencia.length === 0 ? (
             <div>
-              <ClipboardList size={48} className="text-gray-700 mx-auto mb-4" />
-              <p className="text-gray-400 font-semibold mb-2">Sin tareas en esta gerencia</p>
-              <p className="text-gray-600 text-sm mb-5">Agrega la primera tarea para comenzar a trackear el progreso.</p>
+              <div className="w-16 h-16 bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4 text-gray-500">
+                <ClipboardList size={32} />
+              </div>
+              <h3 className="text-white font-bold text-base sm:text-lg mb-1">Sin tareas en esta gerencia</h3>
+              <p className="text-gray-400 text-xs sm:text-sm mb-5 max-w-md mx-auto">
+                Agrega las metas y entregables para que el avance de esta área se calcule en tiempo real.
+              </p>
               <button
                 onClick={() => { setTareaEditando(null); setModalAbierto(true); }}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-xl transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-xl transition-all shadow-md min-h-[44px]"
               >
-                <Plus size={16} />
-                Agregar primera tarea para {gerencia.nombre}
+                <Plus size={18} />
+                <span>Agregar primera tarea para {gerencia.nombre}</span>
               </button>
             </div>
           ) : (
             <div>
-              <CheckCircle2 size={48} className="text-emerald-700 mx-auto mb-4" />
-              <p className="text-gray-400 font-semibold">No hay tareas en este filtro</p>
+              <div className="w-16 h-16 bg-emerald-950/60 border border-emerald-900/60 rounded-2xl flex items-center justify-center mx-auto mb-4 text-emerald-400">
+                <CheckCircle2 size={32} />
+              </div>
+              <h3 className="text-white font-bold text-base mb-1">No hay tareas con el filtro "{filtro}"</h3>
+              <p className="text-gray-400 text-xs">Selecciona otro filtro para ver las demás tareas.</p>
             </div>
           )}
         </div>
@@ -206,7 +240,7 @@ export default function VistaGerencia({ gerencia, tareas, onAgregar, onToggle, o
         </div>
       )}
 
-      {/* Modal */}
+      {/* Modal Crear / Editar */}
       {modalAbierto && (
         <ModalTarea
           tarea={tareaEditando}
