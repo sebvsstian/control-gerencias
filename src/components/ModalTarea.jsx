@@ -1,16 +1,19 @@
 ﻿import React, { useState, useEffect } from 'react';
-import { X, Calendar, User, FileText, AlignLeft, Building2 } from 'lucide-react';
+import { X, Calendar, User, FileText, AlignLeft, Building2, Loader2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+
+const FORM_VACIO = {
+  gerenciaId: '',
+  titulo: '',
+  descripcion: '',
+  responsable: '',
+  fechaLimite: '',
+};
 
 export default function ModalTarea({ tarea, gerenciaIdDefault, onGuardar, onCerrar }) {
   const { gerencias, isDarkMode } = useApp();
-  const [form, setForm] = useState({
-    gerenciaId: gerenciaIdDefault || '',
-    titulo: '',
-    descripcion: '',
-    responsable: '',
-    fechaLimite: '',
-  });
+  const [form, setForm] = useState({ ...FORM_VACIO, gerenciaId: gerenciaIdDefault || '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (tarea) {
@@ -21,13 +24,30 @@ export default function ModalTarea({ tarea, gerenciaIdDefault, onGuardar, onCerr
         responsable: tarea.responsable || '',
         fechaLimite: tarea.fechaLimite || '',
       });
+    } else {
+      setForm({ ...FORM_VACIO, gerenciaId: gerenciaIdDefault || '' });
     }
   }, [tarea, gerenciaIdDefault]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.titulo.trim() || !form.gerenciaId) return;
-    onGuardar(form);
+    if (!form.titulo.trim() || !form.gerenciaId || isSubmitting) return;
+
+    // 1. Deshabilitar botón inmediatamente para evitar doble submit
+    setIsSubmitting(true);
+
+    // 2. Cerrar el modal y limpiar form ANTES de la petición para respuesta visual instantánea
+    const datosAGuardar = { ...form };
+    onCerrar();
+
+    // 3. Ejecutar la escritura en Firestore en segundo plano
+    try {
+      await onGuardar(datosAGuardar);
+    } catch (err) {
+      console.error('[ModalTarea] Error al guardar tarea en Firestore:', err);
+      // Mostrar alerta si Firestore rechaza (permisos, etc.)
+      alert(`Error al guardar la tarea: ${err.message}\n\nRevisa las reglas de seguridad de Firestore en la consola de Firebase.`);
+    }
   };
 
   const inputClass = `w-full border rounded-xl px-3.5 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors min-h-[44px] ${
@@ -72,6 +92,7 @@ export default function ModalTarea({ tarea, gerenciaIdDefault, onGuardar, onCerr
               value={form.gerenciaId}
               onChange={(e) => setForm({ ...form, gerenciaId: e.target.value })}
               required
+              disabled={isSubmitting}
             >
               <option value="">Seleccionar gerencia...</option>
               {gerencias.map((g) => (
@@ -94,6 +115,7 @@ export default function ModalTarea({ tarea, gerenciaIdDefault, onGuardar, onCerr
               value={form.titulo}
               onChange={(e) => setForm({ ...form, titulo: e.target.value })}
               required
+              disabled={isSubmitting}
             />
           </div>
 
@@ -107,6 +129,7 @@ export default function ModalTarea({ tarea, gerenciaIdDefault, onGuardar, onCerr
               placeholder="Detalle del alcance o entregable esperado..."
               value={form.descripcion}
               onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
+              disabled={isSubmitting}
             />
           </div>
 
@@ -121,6 +144,7 @@ export default function ModalTarea({ tarea, gerenciaIdDefault, onGuardar, onCerr
               placeholder="Nombre del alumno responsable..."
               value={form.responsable}
               onChange={(e) => setForm({ ...form, responsable: e.target.value })}
+              disabled={isSubmitting}
             />
           </div>
 
@@ -134,6 +158,7 @@ export default function ModalTarea({ tarea, gerenciaIdDefault, onGuardar, onCerr
               className={inputClass}
               value={form.fechaLimite}
               onChange={(e) => setForm({ ...form, fechaLimite: e.target.value })}
+              disabled={isSubmitting}
             />
           </div>
 
@@ -142,7 +167,8 @@ export default function ModalTarea({ tarea, gerenciaIdDefault, onGuardar, onCerr
             <button
               type="button"
               onClick={onCerrar}
-              className={`w-full sm:flex-1 py-3 rounded-xl border text-sm font-semibold transition-colors min-h-[44px] ${
+              disabled={isSubmitting}
+              className={`w-full sm:flex-1 py-3 rounded-xl border text-sm font-semibold transition-colors min-h-[44px] disabled:opacity-50 ${
                 isDarkMode ? 'border-slate-600 text-slate-300 hover:bg-slate-700' : 'border-slate-300 text-slate-700 hover:bg-slate-100'
               }`}
             >
@@ -150,9 +176,17 @@ export default function ModalTarea({ tarea, gerenciaIdDefault, onGuardar, onCerr
             </button>
             <button
               type="submit"
-              className="w-full sm:flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] text-white font-semibold text-sm transition-all shadow-md shadow-indigo-600/30 min-h-[44px]"
+              disabled={isSubmitting || !form.titulo.trim() || !form.gerenciaId}
+              className="w-full sm:flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] text-white font-semibold text-sm transition-all shadow-md shadow-indigo-600/30 min-h-[44px] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {tarea ? 'Guardar Cambios' : 'Crear Tarea'}
+              {isSubmitting ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  <span>Guardando...</span>
+                </>
+              ) : (
+                <span>{tarea ? 'Guardar Cambios' : 'Crear Tarea'}</span>
+              )}
             </button>
           </div>
         </form>

@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Building2, DollarSign, Users, TrendingUp, MessageSquare,
   MessageCircle, Megaphone, Settings, Cog, Plus, Filter,
@@ -47,13 +47,15 @@ export default function VistaGerencia({ gerencia, tareas, onAgregar, onToggle, o
     (t) => !t.completada && estadoDeadline(t.fechaLimite, t.completada) === 'vencida'
   ).length;
 
+  // El modal se cierra solo antes de llamar a esta funcion (UI instantanea)
+  // Aqui solo ejecutamos la escritura en Firestore y propagamos el error si falla
   const handleGuardar = async (datos) => {
     if (tareaEditando) {
       await onEditar(tareaEditando.id, datos);
     } else {
       await onAgregar({ ...datos, gerenciaId: gerencia.id });
     }
-    setModalAbierto(false);
+    // No cerramos aqui: el modal ya se cerro optimistamente antes de llamar onGuardar
     setTareaEditando(null);
   };
 
