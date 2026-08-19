@@ -30,6 +30,13 @@ export default function VistaGerencia({ gerencia, tareas, onAgregar, onToggle, o
   const [editandoResponsable, setEditandoResponsable] = useState(false);
   const [nombreResponsable, setNombreResponsable] = useState(gerencia.responsable || '');
 
+  // Sincronizar input del responsable cuando Firestore actualice los datos en tiempo real
+  React.useEffect(() => {
+    if (!editandoResponsable) {
+      setNombreResponsable(gerencia.responsable || '');
+    }
+  }, [gerencia.responsable, editandoResponsable]);
+
   const Icon = ICON_MAP[gerencia.icono] || Building2;
   const colors = COLOR_MAP[gerencia.color];
   const pct = calcularPorcentaje(tareas, gerencia.id);
@@ -64,9 +71,14 @@ export default function VistaGerencia({ gerencia, tareas, onAgregar, onToggle, o
     setModalAbierto(true);
   };
 
-  const handleGuardarResponsable = () => {
-    actualizarResponsable(gerencia.id, nombreResponsable);
+  const handleGuardarResponsable = async () => {
+    const valor = nombreResponsable;
     setEditandoResponsable(false);
+    try {
+      await actualizarResponsable(gerencia.id, valor);
+    } catch (err) {
+      console.error('Error al guardar responsable:', err);
+    }
   };
 
   const completadas = tareasGerencia.filter((t) => t.completada).length;
