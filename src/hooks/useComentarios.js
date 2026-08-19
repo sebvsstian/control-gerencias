@@ -5,7 +5,6 @@ import {
   addDoc,
   serverTimestamp,
   query,
-  orderBy,
   where,
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
@@ -22,17 +21,24 @@ export function useComentarios(tareaId) {
       return;
     }
 
+    // Escuchador en tiempo real por tareaId
     const q = query(
       collection(db, 'comentarios'),
-      where('tareaId', '==', tareaId),
-      orderBy('creadoEn', 'asc')
+      where('tareaId', '==', tareaId)
     );
 
     const unsub = onSnapshot(
       q,
-      { includeMetadataChanges: true },
       (snap) => {
         const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        
+        // Ordenar comentarios de forma segura en memoria
+        data.sort((a, b) => {
+          const timeA = a.creadoEn?.toMillis ? a.creadoEn.toMillis() : (a.creadoEn ? new Date(a.creadoEn).getTime() : 0);
+          const timeB = b.creadoEn?.toMillis ? b.creadoEn.toMillis() : (b.creadoEn ? new Date(b.creadoEn).getTime() : 0);
+          return timeA - timeB;
+        });
+
         setComentarios(data);
         setLoading(false);
         setError(null);
