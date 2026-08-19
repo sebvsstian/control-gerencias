@@ -11,67 +11,63 @@ import {
 import { db } from '../firebase/config';
 
 export function useTareas() {
-  // Estado inicial VACIO — la unica fuente de verdad es Firestore
+  // Estado inicial vacio — la unica fuente de verdad es Firestore
   const [tareas, setTareas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    console.log('[Firestore] Iniciando listener onSnapshot en coleccion "tareas"...');
+    console.log('[Firestore] Conectando listener onSnapshot a coleccion "tareas"...');
 
-    // Timeout de seguridad: desbloquea la UI si Firestore no responde en 5s
-    const safetyTimeout = setTimeout(() => {
-      console.warn('[Firestore] Sin respuesta tras 5s — desbloqueando UI. Verifica las Reglas de Firestore y la conexion a Internet.');
+    // 3. Aumentado el timeout de conexion a 10 segundos para dar tiempo en redes lentas
+    const connectionTimeout = setTimeout(() => {
+      console.warn('[Firestore] Sin respuesta inicial tras 10s — desbloqueando UI para operar mientras se completa la reconexion.');
       setLoading(false);
-      setError('Firestore no respondio en 5 segundos. Verifica las Reglas de Seguridad en la consola de Firebase.');
-    }, 5000);
+      setError('Firestore no respondió en 10 segundos. Si estás usando una red lenta o las Reglas de Seguridad están pendientes, se intentará la reconexión de forma transparente.');
+    }, 10000);
 
     const colRef = collection(db, 'tareas');
 
     const unsub = onSnapshot(
       colRef,
       (snap) => {
-        clearTimeout(safetyTimeout);
+        // Al recibir respuesta de Firestore (incluso tras el timeout de 10s), reconexion transparente
+        clearTimeout(connectionTimeout);
 
-        console.log('[Firestore] onSnapshot recibido. Documentos en "tareas":', snap.docs.length);
+        console.log('[Firestore] Sincronización exitosa. Total tareas recibidas:', snap.docs.length);
 
         const data = snap.docs.map((d) => {
           const docData = d.data();
           return { id: d.id, ...docData };
         });
 
-        // Ordenar en memoria por creadoEn ascendente
+        // Ordenar en memoria por fecha de creacion ascendente
         data.sort((a, b) => {
           const timeA = a.creadoEn?.toMillis ? a.creadoEn.toMillis() : 0;
           const timeB = b.creadoEn?.toMillis ? b.creadoEn.toMillis() : 0;
           return timeA - timeB;
         });
 
-        // UNICA fuente de verdad: lo que devuelve Firestore
+        // Actualizar tareas y limpiar cualquier error previo
         setTareas(data);
         setLoading(false);
         setError(null);
       },
       (err) => {
-        clearTimeout(safetyTimeout);
-        console.error('[Firestore] ERROR en onSnapshot:', err.code, err.message);
-        console.error('[Firestore] Posibles causas: Reglas de Firestore bloqueadas, proyecto incorrecto, sin conexion a internet.');
-        setError(`Error Firestore (${err.code}): ${err.message}`);
+        clearTimeout(connectionTimeout);
+        console.error('[Firestore] Error en listener onSnapshot:', err.code, err.message);
+        setError(`Error de conexión Firestore: ${err.message}`);
         setLoading(false);
-        // Mostrar alerta visible para diagnosticar
-        alert(
-          `[Firestore] No se pudo conectar a la base de datos.\n\nError: ${err.message}\nCodigo: ${err.code}\n\nPasos para solucionar:\n1. Ve a console.firebase.google.com\n2. Selecciona el proyecto "kalopsia-usm"\n3. Firestore Database > Reglas\n4. Cambia las reglas a: allow read, write: if true;\n5. Publica los cambios.`
-        );
       }
     );
 
     return () => {
-      clearTimeout(safetyTimeout);
+      clearTimeout(connectionTimeout);
       unsub();
     };
   }, []);
 
-  // AGREGAR tarea — escribe directamente en Firestore, sin estado optimista para garantizar persistencia
+  // 2. AGREGAR tarea con logs y validacion de persistencia
   const agregarTarea = async (tarea) => {
     const nuevaTarea = {
       ...tarea,
@@ -79,23 +75,22 @@ export function useTareas() {
       creadoEn: serverTimestamp(),
     };
 
-    console.log('[Firestore] Intentando guardar en Firestore:', nuevaTarea);
+    console.log('Intentando guardar en Firestore:', nuevaTarea);
 
     try {
       const docRef = await addDoc(collection(db, 'tareas'), nuevaTarea);
-      console.log('[Firestore] Guardado exitoso con ID:', docRef.id);
+      console.log('Guardado exitoso con ID:', docRef.id);
       return docRef;
     } catch (err) {
-      console.error('[Firestore] ERROR al guardar tarea:', err.code, err.message);
-      alert(`Error al guardar en Firestore: ${err.message}\n\nCodigo de error: ${err.code}\n\nVerifica las Reglas de Seguridad en console.firebase.google.com > kalopsia-usm > Firestore > Reglas.`);
+      console.error('[Firestore] Error al guardar tarea:', err);
+      alert('Error al guardar en Firestore: ' + err.message);
       throw err;
     }
   };
 
-  // TOGGLE — actualiza en Firestore, revertir si falla
+  // TOGGLE tarea en Firestore con actualizacion optimista
   const toggleTarea = async (id, completadaActual) => {
     const nuevoEstado = !completadaActual;
-    // Actualizacion optimista en UI
     setTareas((prev) =>
       prev.map((t) => (t.id === id ? { ...t, completada: nuevoEstado } : t))
     );
@@ -105,18 +100,18 @@ export function useTareas() {
         completada: nuevoEstado,
         actualizadoEn: serverTimestamp(),
       });
+      console.log(`[Firestore] Tarea ${id} actualizada a: ${nuevoEstado ? 'Completada' : 'Pendiente'}`);
     } catch (err) {
-      console.error('[Firestore] Error al actualizar tarea:', err);
-      // Revertir UI si Firestore falla
+      console.error('[Firestore] Error al actualizar estado:', err);
       setTareas((prev) =>
         prev.map((t) => (t.id === id ? { ...t, completada: completadaActual } : t))
       );
-      alert(`Error al actualizar tarea: ${err.message}`);
+      alert('Error al actualizar en Firestore: ' + err.message);
       throw err;
     }
   };
 
-  // EDITAR — actualiza en Firestore
+  // EDITAR tarea en Firestore
   const editarTarea = async (id, datos) => {
     setTareas((prev) =>
       prev.map((t) => (t.id === id ? { ...t, ...datos } : t))
@@ -127,22 +122,24 @@ export function useTareas() {
         ...datos,
         actualizadoEn: serverTimestamp(),
       });
+      console.log(`[Firestore] Tarea ${id} editada correctamente`);
     } catch (err) {
       console.error('[Firestore] Error al editar tarea:', err);
-      alert(`Error al editar tarea: ${err.message}`);
+      alert('Error al editar en Firestore: ' + err.message);
       throw err;
     }
   };
 
-  // ELIMINAR — borra de Firestore
+  // ELIMINAR tarea en Firestore
   const eliminarTarea = async (id) => {
     setTareas((prev) => prev.filter((t) => t.id !== id));
 
     try {
       await deleteDoc(doc(db, 'tareas', id));
+      console.log(`[Firestore] Tarea ${id} eliminada`);
     } catch (err) {
       console.error('[Firestore] Error al eliminar tarea:', err);
-      alert(`Error al eliminar tarea: ${err.message}`);
+      alert('Error al eliminar en Firestore: ' + err.message);
       throw err;
     }
   };
